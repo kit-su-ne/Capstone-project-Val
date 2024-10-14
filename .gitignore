@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+myenv/
+.venv/
+.env
+.myenv
+.myenv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# VS Code
+.vscode/
+# PyCharm
+.idea/
+
+# Streamlit
+.streamlit/secrets.toml
+
+#too many
+.dotnet
+.config
