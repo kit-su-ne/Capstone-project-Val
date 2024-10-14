@@ -84,44 +84,69 @@ MAX_RETRIES = 3
 
 # Function to scrape page content (using Selenium)
 def scrape_page_content(url, category, target_classes):
-    # Set up Selenium WebDriver in headless mode
-    service = Service()
-    options = Options()
-    #options.add_argument("--headless=new")
-    options.add_argument("--headless")
-    driver = webdriver.Chrome(service=service, options=options)
+    # # Set up Selenium WebDriver in headless mode
+    # service = Service()
+    # options = Options()
+    # #options.add_argument("--headless=new")
+    # options.add_argument("--headless")
+    # driver = webdriver.Chrome(service=service, options=options)
     
-    driver.get(url)
+    # driver.get(url)
+
+    with st.echo():
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.chrome.service import Service
+        from webdriver_manager.chrome import ChromeDriverManager
+        from webdriver_manager.core.os_manager import ChromeType
+
+        @st.cache_resource
+        def get_driver():
+            return webdriver.Chrome(
+                service=Service(
+                    ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+                ),
+                options=options,
+            )
+
+        options = Options()
+        options.add_argument("--disable-gpu")
+        options.add_argument("--headless")
+
+        driver = get_driver()
+        
+        # Scrape each URL
+        scraped_data = []
+        for attempt in range(MAX_RETRIES):
+            try:
+                driver.get(url)
+                time.sleep(2)  # Wait for the page to load
+
+                for class_name in target_classes[category]:
+                    soup = BeautifulSoup(driver.page_source, 'html.parser')
+                    content_divs = soup.find_all('div', class_=class_name)
+                    text = ' '.join([div.get_text(separator=' ', strip=True) for div in content_divs]) if content_divs else 'Content not found'
+
+                    page_data = {
+                        'url': url,
+                        'content': {class_name: text}
+                    }
+                    scraped_data.append(page_data)
+
+                    # Debug print for scraping feedback
+                    print(f"Scraped content from {url} for class {class_name}:\n{text}\n{'='*80}")
+                break  # Exit loop if successful
+
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed for {url}: {e}")
+                if attempt < MAX_RETRIES - 1:
+                    print(f"Retrying in {RETRY_DELAY} seconds...")
+                    time.sleep(RETRY_DELAY)
+                else:
+                    print("Max retries reached. Moving to the next URL.")
+
+        st.code(driver.page_source)
     
-    # Scrape each URL
-    scraped_data = []
-    for attempt in range(MAX_RETRIES):
-        try:
-            driver.get(url)
-            time.sleep(2)  # Wait for the page to load
-
-            for class_name in target_classes[category]:
-                soup = BeautifulSoup(driver.page_source, 'html.parser')
-                content_divs = soup.find_all('div', class_=class_name)
-                text = ' '.join([div.get_text(separator=' ', strip=True) for div in content_divs]) if content_divs else 'Content not found'
-
-                page_data = {
-                    'url': url,
-                    'content': {class_name: text}
-                }
-                scraped_data.append(page_data)
-
-                # Debug print for scraping feedback
-                print(f"Scraped content from {url} for class {class_name}:\n{text}\n{'='*80}")
-            break  # Exit loop if successful
-
-        except Exception as e:
-            print(f"Attempt {attempt + 1} failed for {url}: {e}")
-            if attempt < MAX_RETRIES - 1:
-                print(f"Retrying in {RETRY_DELAY} seconds...")
-                time.sleep(RETRY_DELAY)
-            else:
-                print("Max retries reached. Moving to the next URL.")
     
     driver.quit()
     return scraped_data
