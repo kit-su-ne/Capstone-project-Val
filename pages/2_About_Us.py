@@ -10,6 +10,11 @@ st.set_page_config(
 def about():
     st.title("About This Project")
     
+    with st.expander("Source Code"):
+        st.write("""
+        GitHub(https://github.com/kit-su-ne/Capstone-project-Val)
+        """)
+
     st.header(":large_orange_circle: :orange[Project Scope]")
     st.write("""
         This project aims to develop an application that provides information and interactive tools related to the CPF Investment Scheme (CPFIS). 
