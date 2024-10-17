@@ -12,7 +12,7 @@ def about():
     
     with st.expander("Source Code"):
         st.write("""
-        GitHub(https://github.com/kit-su-ne/Capstone-project-Val)
+        [GitHub](https://github.com/kit-su-ne/Capstone-project-Val)
         """)
 
     st.header(":large_orange_circle: :orange[Project Scope]")
