@@ -196,12 +196,6 @@ def scrape_and_save_data():
         ]
     }
 
-    # Target classes for CPF and SSO content
-    target_classes = {
-        "CPF": ['cmp-teaser__content', 'section-head section-title', 'container responsivegrid'],
-        "SSO": ['row footer-title', 'status-value', 'legis']
-    }
-
     # Initialize scraped data dictionary
     scraped_data = {
         "CPF": [],
