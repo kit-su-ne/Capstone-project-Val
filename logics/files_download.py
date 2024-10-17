@@ -169,6 +169,7 @@ def scrape_page_content(url, category, target_classes):
                     print(f"Retrying in {RETRY_DELAY} seconds...")
                     time.sleep(RETRY_DELAY)
                 else:
+                    st.write("Max retries reached. Moving to the next URL.")
                     print("Max retries reached. Moving to the next URL.")
 
     except Exception as e:
