@@ -82,57 +82,83 @@ SSO_FILE_PATH = os.path.join(OUTPUT_DIR, 'SSO_scraped_data.json')
 RETRY_DELAY = 5  # seconds
 MAX_RETRIES = 3
 
-# Function to scrape page content (using Selenium)
-def scrape_page_content(url, category, target_classes):
-    # # Set up Selenium WebDriver in headless mode
-    # service = Service()
-    # options = Options()
-    # #options.add_argument("--headless=new")
-    # options.add_argument("--headless")
-    # driver = webdriver.Chrome(service=service, options=options)
+# # Function to scrape page content (using Selenium)
+# def scrape_page_content(url, category, target_classes):
+#     # Set up Selenium WebDriver in headless mode
+#     service = Service()
+#     options = Options()
+#     options.add_argument("--headless")
+#     driver = webdriver.Chrome(service=service, options=options)
     
-    # driver.get(url)
+#     driver.get(url)
+    
+#     # Scrape each URL
+#     scraped_data = []
+#     for attempt in range(MAX_RETRIES):
+#         try:
+#             driver.get(url)
+#             time.sleep(2)  # Wait for the page to load
 
-    with st.echo():
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.chrome.service import Service
-        from webdriver_manager.chrome import ChromeDriverManager
-        from webdriver_manager.core.os_manager import ChromeType
+#             for class_name in target_classes[category]:
+#                 soup = BeautifulSoup(driver.page_source, 'html.parser')
+#                 content_divs = soup.find_all('div', class_=class_name)
+#                 text = ' '.join([div.get_text(separator=' ', strip=True) for div in content_divs]) if content_divs else 'Content not found'
 
-        @st.cache_resource
-        def get_driver():
-            return webdriver.Chrome(
-                service=Service(
-                    ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
-                ),
-                options=options,
-            )
+#                 page_data = {
+#                     'url': url,
+#                     'content': {class_name: text}
+#                 }
+#                 scraped_data.append(page_data)
 
-        options = Options()
-        options.add_argument("--disable-gpu")
-        options.add_argument("--headless")
+#                 # Debug print for scraping feedback
+#                 print(f"Scraped content from {url} for class {class_name}:\n{text}\n{'='*80}")
+#             break  # Exit loop if successful
 
-        driver = get_driver()
+#         except Exception as e:
+#             print(f"Attempt {attempt + 1} failed for {url}: {e}")
+#             if attempt < MAX_RETRIES - 1:
+#                 print(f"Retrying in {RETRY_DELAY} seconds...")
+#                 time.sleep(RETRY_DELAY)
+#             else:
+#                 print("Max retries reached. Moving to the next URL.")
+    
+#     driver.quit()
+#     return scraped_data
+
+from webdriver_manager.chrome import ChromeDriverManager
+def scrape_page_content(url, category, target_classes):
+    # Set up Selenium WebDriver in headless mode with additional options
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument('--disable-gpu')
+    
+    driver = None
+    try:
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         
-        # Scrape each URL
+        # DEBUG log in Streamlit (remove or modify as needed)
+        st.write(f"DEBUG:DRIVER:{driver}")
+        
+        # Scrape each URL with retry mechanism
         scraped_data = []
         for attempt in range(MAX_RETRIES):
             try:
                 driver.get(url)
                 time.sleep(2)  # Wait for the page to load
-
+                
+                # Parse page source with BeautifulSoup
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
+                
                 for class_name in target_classes[category]:
-                    soup = BeautifulSoup(driver.page_source, 'html.parser')
                     content_divs = soup.find_all('div', class_=class_name)
                     text = ' '.join([div.get_text(separator=' ', strip=True) for div in content_divs]) if content_divs else 'Content not found'
-
+                    
                     page_data = {
                         'url': url,
                         'content': {class_name: text}
                     }
                     scraped_data.append(page_data)
-
+                    
                     # Debug print for scraping feedback
                     print(f"Scraped content from {url} for class {class_name}:\n{text}\n{'='*80}")
                 break  # Exit loop if successful
@@ -145,10 +171,12 @@ def scrape_page_content(url, category, target_classes):
                 else:
                     print("Max retries reached. Moving to the next URL.")
 
-        st.code(driver.page_source)
-    
-    
-    driver.quit()
+    except Exception as e:
+        st.write(f"DEBUG:INIT_DRIVER:ERROR:{e}")
+    finally:
+        if driver is not None:
+            driver.quit()
+
     return scraped_data
 
 # Function to save scraped data as JSON
