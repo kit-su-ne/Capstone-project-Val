@@ -178,16 +178,6 @@ def save_scraped_data(filepath, data):
         json.dump(data, json_file, indent=4)
     print(f"Scraped data saved in {filepath}")
 
-# # Function to save scraped data as JSON
-# def save_scraped_data(category, scraped_data):
-#     if not os.path.exists(OUTPUT_DIR):
-#         os.makedirs(OUTPUT_DIR)
-    
-#     output_file_path = os.path.join(OUTPUT_DIR, f'{category}_scraped_data.json')
-#     with open(output_file_path, 'w') as json_file:
-#         json.dump(scraped_data, json_file, indent=4)
-#     print(f"Scraped data saved in {output_file_path}")
-
 def scrape_and_save_data():
         # URL lists
     urls = {
@@ -218,16 +208,6 @@ def scrape_and_save_data():
         "SSO": []
     }
 
-    # # Scrape URLs for each category
-    # for category, url_list in urls.items():
-    #     #category_data = []
-    #     for url in url_list:
-    #         scraped_content = scrape_page_content(url, category, target_classes) #added v01
-    #         scraped_data[category].extend(scraped_content)  # Store scraped content
-
-    #         # Save the data after scraping
-    #         save_scraped_data(category, scraped_content)
-
     for category, url_list in urls.items():
         for url in url_list:
             scraped_content = scrape_page_content(url)
@@ -242,8 +222,6 @@ def scrape_and_save_data():
     save_scraped_data(SSO_FILE_PATH, scraped_data["SSO"])
 
     return scraped_data["CPF"], scraped_data["SSO"], WhatCan_data
-
-    # return WhatCan_data, scraped_data["CPF"], scraped_data["SSO"]
 
 # Function to load data from JSON files and return as dictionaries
 def load_data():
