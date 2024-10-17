@@ -142,6 +142,7 @@ def scrape_page_content(url):
     options = Options()
     options.add_argument("--headless")
     options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1920x1080')
     
     driver = None
     scraped_content = ""
